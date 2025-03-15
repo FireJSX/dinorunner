@@ -1,8 +1,8 @@
-🦖 Dino Runner V2
+🦖 Dino Runner 
 ==================
 __________________
 
-  Dino Runner V2 is a 2D endless runner game built with Pygame. The player controls a character that must avoid obstacles and achieve the highest score possible.
+  Dino Runner is a 2D endless runner game built with Pygame. The player controls a character that must avoid obstacles and achieve the highest score possible.
 
 🎮 How to Play
 ===========
