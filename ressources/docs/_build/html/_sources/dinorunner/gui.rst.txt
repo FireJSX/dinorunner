@@ -1,0 +1,6 @@
+GUI
+===========
+
+.. automodule:: DinoRunner.gui
+    :members:
+    :undoc-members:
