@@ -27,7 +27,7 @@ class SoundManager:
         self.sound_dir = os.path.join(os.path.dirname(__file__), "..\\ressources\\sound")
 
         # Sounddateien mit absolutem Pfad referenzieren
-        self.background_music_file = os.path.join(self.sound_dir, "background_music_pre.wav")
+        self.background_music_file = os.path.join(self.sound_dir, "somebody_told_you.WAV")
         self.jump_sound_file = os.path.join(self.sound_dir, "jump-sound.mp3")
         self.death_sound_file = os.path.join(self.sound_dir, "death-sound.mp3")
 
