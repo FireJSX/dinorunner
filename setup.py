@@ -5,7 +5,7 @@ setup(
     version="0.1",                # Version des Packages
     packages=find_packages(),     # Findet alle Unterpakete und Module
     install_requires=[            # Abhängigkeiten
-        # Beispiel: 'numpy',
+      "pygame", "pygame_gui"
     ],
     package_data={                # Ressourcen, die mit dem Package verteilt werden sollen
         'dinorunner': [
