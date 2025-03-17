@@ -1,4 +1,4 @@
-# run.py
+#run.py
 
 from dinorunner.main import main
 

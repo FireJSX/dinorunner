@@ -1,6 +1,0 @@
-GFX
-===========
-
-.. automodule:: DinoRunner.gfx
-    :members:
-    :undoc-members:

@@ -1,6 +1,0 @@
-LOGIC
-===========
-
-.. automodule:: DinoRunner.logic
-    :members:
-    :undoc-members:

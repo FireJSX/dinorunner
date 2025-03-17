@@ -1,8 +1,16 @@
+# /// script
+# dependencies = [
+#     "pygame_gui",
+#     "pygame",
+# ]
+# ///
+
 import pygame
-import random
+import asyncio
 from .logic import Player, ObstacleManager, load_highscore, save_highscore
 from .gui import UI, GameController, BackgroundImage, Floor
 from .sfx import sound_manager
+import sys, platform
 
 pygame.init()
 pygame.font.init()
@@ -32,6 +40,7 @@ sound_manager.load_music()
 sound_manager.standard_volume()
 sound_manager.load_jump_sound()
 sound_manager.load_death_sound()
+
 ui = UI(screen_width, screen_height)
 game_controller = GameController(screen)
 
@@ -41,7 +50,7 @@ background = BackgroundImage(ui.get_ressources_path("graphics\\moon_background.p
 floor = Floor(screen, ui.get_ressources_path("graphics\\floor.png"), ui.get_ressources_path)
 
 # Der Hauptteil des Spiels startet hier
-def main():
+async def main():
     """
     Hauptspiel-Schleife
     """
@@ -51,6 +60,7 @@ def main():
 
     while running:
         timer.tick(fps)
+        await asyncio.sleep(0)
         y_change = 0
         highscore_value = load_highscore(ui)
         background.blit(screen)
@@ -107,6 +117,8 @@ def main():
         pygame.display.flip()
 
     pygame.quit()
+
+asyncio.run(main())
 
 # Dieser Block sorgt dafür, dass das Skript nur dann ausgeführt wird, wenn es direkt gestartet wird
 if __name__ == "__main__":

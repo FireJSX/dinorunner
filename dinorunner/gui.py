@@ -51,7 +51,7 @@ class UI:
         Returns:
             str: Der absolute Pfad zur Datei.
         """
-        return os.path.join(os.path.dirname(__file__), '..', 'ressources', filename)
+        return os.path.join(os.path.dirname(__file__), 'ressources', filename)
 
     def start_screen(self, screen, screen_width, screen_height, font):
             WHITE = (255, 255, 255)

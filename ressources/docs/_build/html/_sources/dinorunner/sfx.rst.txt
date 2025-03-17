@@ -1,6 +1,0 @@
-SFX
-===========
-
-.. automodule:: DinoRunner.sfx
-    :members:
-    :undoc-members:
