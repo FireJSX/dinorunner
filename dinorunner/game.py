@@ -18,7 +18,7 @@ gravity = 1
 speed = 5
 obstacle_speed = 2
 active = False
-last_speed_increase = -10  # Speichert die letzte 10er-Marke
+last_speed_increase = -10
 
 screen_width = 800
 screen_height = 600
@@ -40,17 +40,14 @@ obstacles = ObstacleManager(screen_width, player_size // 2, obstacle_speed, ui)
 background = BackgroundImage(ui.get_ressources_path("graphics/moon_background.png"), screen_width, screen_height, ui.get_ressources_path)
 floor = Floor(screen, ui.get_ressources_path("graphics/floor.png"), ui.get_ressources_path)
 
-# Der Hauptteil des Spiels startet hier
-import asyncio
-
+# Hauptspiel-Schleife
 async def main():
-    """
-    Hauptspiel-Schleife
-    """
     global score, highscore_value, active, last_speed_increase, player, obstacles, speed
 
-    running = True
+    # 📍 Zeige Hauptmenü VOR Spielstart
+    ui.show_main_menu()
 
+    running = True
     while running:
         timer.tick(fps)
         y_change = 0
@@ -98,20 +95,18 @@ async def main():
                     save_highscore(highscore_value, ui)
                 active = False
 
-            # Geschwindigkeit NUR alle 10 Punkte erhöhen
             if score >= last_speed_increase + 10:
-                obstacles.speed += 0.5  # Langsame Erhöhung
-                last_speed_increase = score  # Merkt sich, wann zuletzt erhöht wurde
+                obstacles.speed += 0.5
+                last_speed_increase = score
 
         screen.blit(player.image, (player.x, player.y - player_size))
         ui.manager.draw_ui(screen)
 
         pygame.display.flip()
-
         await asyncio.sleep(0)
 
     pygame.quit()
 
-# Dieser Block sorgt dafür, dass das Skript nur dann ausgeführt wird, wenn es direkt gestartet wird
+# Nur ausführen, wenn direkt gestartet
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
