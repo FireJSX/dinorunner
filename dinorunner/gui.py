@@ -22,7 +22,8 @@ class UI:
         self.volume_slider = None
         self.clock = pygame.time.Clock()
         self.pause_menu_active = False
-        self.main_menu_elements = []  # Speichert alle Elemente des Hauptmenüs
+        self.main_menu_elements = []
+        self.pause_menu_elements = []
 
     def get_ressources_path(self, filename):
         return os.path.join(os.path.dirname(__file__), '..', 'ressources', filename)
@@ -47,57 +48,104 @@ class UI:
         self.pause_menu_active = True
         paused = True
 
-        exit_button_image = pygame.image.load(self.get_ressources_path(
-            'graphics/exit-button-md.png')).convert_alpha()
-        exit_button_rect = exit_button_image.get_rect(topleft=(15, 10))
-        exit_button_image = pygame.transform.scale(exit_button_image, (exit_button_image.get_width() // 2, exit_button_image.get_height() // 2))
+        self.manager = pygame_gui.UIManager((self.screen_width, self.screen_height))
 
-        pause_background = pygame.image.load(self.get_ressources_path(
-            'graphics/background.jpg')).convert_alpha()
+        pause_background = pygame.image.load(self.get_ressources_path('graphics/background.jpg')).convert_alpha()
+
+        pause_background.set_alpha(250)
 
         screen_width = self.screen.get_width()
         screen_height = self.screen.get_height()
         original_width, original_height = pause_background.get_size()
-
         scale_factor_x = screen_width / original_width
         scale_factor_y = screen_height / original_height
         scale_factor = max(scale_factor_x, scale_factor_y)
-
         new_width = int(original_width * scale_factor)
         new_height = int(original_height * scale_factor)
         x_position = int((new_width - screen_width) / 2) * -1
         y_position = int((new_height - screen_height) / 2) * -1
         scaled_pause_background = pygame.transform.scale(pause_background, (new_width, new_height))
 
-        while paused:
-            self.screen.blit(scaled_pause_background, (x_position, y_position))
-            pause_text = self.font.render("Game paused – Press 'ESC' to continue", True, (255, 255, 255))
-            text_rect = pause_text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() // 2 - 30))
+        # --- Transparentes Overlay erstellen ---
+        overlay = pygame.Surface((self.screen_width, self.screen_height))
+        overlay.fill((0, 0, 0))  # Schwarze Füllung
+        overlay.set_alpha(120)  # Transparenzwert für das Overlay (0-255)
 
-            self.screen.blit(exit_button_image, exit_button_rect)
-            self.screen.blit(pause_text, text_rect)
-            self.manager.draw_ui(self.screen)
-            pygame.display.flip()
+        # Buttons erstellen
+        button_width = 200
+        button_height = 50
+        spacing = 20
+        center_x = screen_width // 2 - button_width // 2
+        start_y = screen_height // 2 - (button_height + spacing)
+
+        resume_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((center_x, start_y), (button_width, button_height)),
+            text='Continue',
+            manager=self.manager
+        )
+
+        main_menu_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((center_x, start_y + button_height + spacing), (button_width, button_height)),
+            text='Main Menu',
+            manager=self.manager
+        )
+
+        quit_button = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((center_x, start_y + 2 * (button_height + spacing)),
+                                      (button_width, button_height)),
+            text='Exit game',
+            manager=self.manager
+        )
+
+        # Speichere Buttons für späteres Entfernen
+        self.pause_menu_elements = [resume_button, main_menu_button, quit_button]
+
+        while paused:
+            time_delta = self.clock.tick(self.FPS) / 1000.0
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        paused = False
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        if exit_button_rect.collidepoint(event.pos):
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    paused = False
+
+                if event.type == pygame.USEREVENT:
+                    if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                        if event.ui_element == resume_button:
+                            paused = False
+                        elif event.ui_element == main_menu_button:
+                            self._clear_pause_menu_elements()
+                            self.pause_menu_active = False
+                            self.show_main_menu()
+                            return
+                        elif event.ui_element == quit_button:
                             pygame.quit()
                             sys.exit()
 
-            time_delta = self.clock.tick(self.FPS) / 1000
+                self.manager.process_events(event)
+
             self.manager.update(time_delta)
-            self.screen.fill((0, 0, 0))
+
+            # --- Transparentes Overlay anwenden ---
+            self.screen.blit(scaled_pause_background, (x_position, y_position))  # Hintergrund anzeigen
+            self.screen.blit(overlay, (0, 0))  # Overlay über Hintergrund legen
+
             self.manager.draw_ui(self.screen)
+            pygame.display.flip()
+
+        # Menü verlassen
+        for element in self.pause_menu_elements:
+            element.kill()
+        self.pause_menu_elements.clear()
         self.pause_menu_active = False
+        self.manager = pygame_gui.UIManager((self.screen_width, self.screen_height))
+
+    def _clear_pause_menu_elements(self):
+        for element in self.pause_menu_elements:
+            element.kill()
+        self.pause_menu_elements.clear()
 
     def update(self):
         for event in pygame.event.get():
@@ -133,17 +181,16 @@ class UI:
 
         start_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((center_x, start_y), (button_width, button_height)),
-            text='Spiel starten',
+            text='Start game',
             manager=self.manager
         )
 
         quit_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((center_x, start_y + button_height + spacing), (button_width, button_height)),
-            text='Beenden',
+            text='Exit game',
             manager=self.manager
         )
 
-        # 🆕 Buttons speichern, um sie später zu entfernen
         self.main_menu_elements.extend([start_button, quit_button])
 
         while self.main_menu_active:
@@ -156,14 +203,13 @@ class UI:
 
                 if event.type == pygame.USEREVENT:
                     if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-                        if event.ui_element.text == 'Spiel starten':
+                        if event.ui_element.text == 'Start game':
                             self.main_menu_active = False
-                            # 🆕 Buttons entfernen
                             for element in self.main_menu_elements:
                                 element.kill()
                             self.main_menu_elements.clear()
 
-                        elif event.ui_element.text == 'Beenden':
+                        elif event.ui_element.text == 'Exit game':
                             pygame.quit()
                             sys.exit()
 

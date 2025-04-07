@@ -1,5 +1,6 @@
-pygame
-pygame_gui
-pytmx
-pygame-ce
-pygame-gui
+pygame==2.3.0
+pygame-gui==0.5.10
+pygame-ce==2.0.1
+pygame_gui==0.6.0
+pytmx==3.12.0
+dinorunner @ file:///path/to/dinorunner
