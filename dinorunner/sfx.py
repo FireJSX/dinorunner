@@ -92,5 +92,51 @@ class SoundManager:
         if self.death_sound:
             self.death_sound.play()
 
+    def play_music(self, filename, volume=None):
+        """
+        Spielt eine Musikdatei aus dem Soundverzeichnis.
+
+        Args:
+            filename (str): Dateiname der Musikdatei (z. B. "nguu.ogg")
+            volume (float): Optionaler Lautstärkewert (0.0 – 1.0)
+        """
+        try:
+            music_path = os.path.join(self.sound_dir, filename)
+            if not os.path.exists(music_path):
+                raise FileNotFoundError(f"Musikdatei nicht gefunden: {music_path}")
+
+            pygame.mixer.music.load(music_path)
+            pygame.mixer.music.set_volume(volume if volume is not None else self.volume)
+            pygame.mixer.music.play(-1)
+            print(f"🎵 Musik abgespielt: {filename}")
+        except Exception as e:
+            print(f"Fehler beim Abspielen von {filename}: {e}")
+
+    def set_volume(self, value):
+        self.volume = value
+        pygame.mixer.music.set_volume(self.volume)
+
+    def pause_music(self):
+        """Pausiert die Musik."""
+        if pygame.mixer.music.get_busy():
+            pygame.mixer.music.pause()
+            self.music_paused = True
+            print("Musik pausiert.")
+
+    def resume_music(self):
+        """Setzt die pausierte Musik fort."""
+        if self.music_paused:
+            pygame.mixer.music.unpause()
+            self.music_paused = False
+            print("Musik fortgesetzt.")
+
+    def stop_music(self):
+        """Stoppt die Hintergrundmusik."""
+        pygame.mixer.music.stop()
+        self.music_paused = False
+        print("Musik gestoppt.")
+
+
+
 # Instanz erstellen
 sound_manager = SoundManager()

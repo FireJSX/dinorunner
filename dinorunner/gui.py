@@ -2,6 +2,7 @@ import pygame
 import pygame_gui
 import sys
 import os
+from .sfx import sound_manager
 
 class UI:
     """
@@ -24,6 +25,7 @@ class UI:
         self.pause_menu_active = False
         self.main_menu_elements = []
         self.pause_menu_elements = []
+        self.sound_manager = sound_manager
 
     def get_ressources_path(self, filename):
         return os.path.join(os.path.dirname(__file__), '..', 'ressources', filename)
@@ -48,10 +50,8 @@ class UI:
         self.pause_menu_active = True
         paused = True
 
-        self.manager = pygame_gui.UIManager((self.screen_width, self.screen_height))
-
+        # Lade den Hintergrund und das Overlay für das Pause-Menü
         pause_background = pygame.image.load(self.get_ressources_path('graphics/background.jpg')).convert_alpha()
-
         pause_background.set_alpha(250)
 
         screen_width = self.screen.get_width()
@@ -66,12 +66,12 @@ class UI:
         y_position = int((new_height - screen_height) / 2) * -1
         scaled_pause_background = pygame.transform.scale(pause_background, (new_width, new_height))
 
-        # --- Transparentes Overlay erstellen ---
+        # Transparentes Overlay
         overlay = pygame.Surface((self.screen_width, self.screen_height))
         overlay.fill((0, 0, 0))  # Schwarze Füllung
-        overlay.set_alpha(120)  # Transparenzwert für das Overlay (0-255)
+        overlay.set_alpha(120)  # Transparenzwert
 
-        # Buttons erstellen
+        # Buttons für das Pause-Menü
         button_width = 200
         button_height = 50
         spacing = 20
@@ -97,8 +97,10 @@ class UI:
             manager=self.manager
         )
 
-        # Speichere Buttons für späteres Entfernen
         self.pause_menu_elements = [resume_button, main_menu_button, quit_button]
+
+        # Musikpause und Lautstärkeregelung
+        sound_manager.set_volume(0.1)  # Lautstärke verringern
 
         while paused:
             time_delta = self.clock.tick(self.FPS) / 1000.0
@@ -109,16 +111,20 @@ class UI:
                     sys.exit()
 
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    paused = False
+                    paused = False  # Pausieren abbrechen
 
                 if event.type == pygame.USEREVENT:
                     if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == resume_button:
                             paused = False
+                            sound_manager.set_volume(0.5)  # Lautstärke zurücksetzen
+                            sound_manager.resume_music()  # Musik fortsetzen
                         elif event.ui_element == main_menu_button:
                             self._clear_pause_menu_elements()
                             self.pause_menu_active = False
-                            self.show_main_menu()
+                            sound_manager.stop_music()  # Ingame-Musik stoppen
+                            sound_manager.play_music("nguu.ogg", volume=0.5)  # Hauptmenü-Musik abspielen
+                            self.show_main_menu()  # Zum Hauptmenü wechseln
                             return
                         elif event.ui_element == quit_button:
                             pygame.quit()
@@ -128,14 +134,15 @@ class UI:
 
             self.manager.update(time_delta)
 
-            # --- Transparentes Overlay anwenden ---
-            self.screen.blit(scaled_pause_background, (x_position, y_position))  # Hintergrund anzeigen
-            self.screen.blit(overlay, (0, 0))  # Overlay über Hintergrund legen
+            # Hintergrund und Overlay anzeigen
+            self.screen.blit(scaled_pause_background, (x_position, y_position))
+            self.screen.blit(overlay, (0, 0))
 
             self.manager.draw_ui(self.screen)
             pygame.display.flip()
 
         # Menü verlassen
+        sound_manager.set_volume(0.5)
         for element in self.pause_menu_elements:
             element.kill()
         self.pause_menu_elements.clear()
