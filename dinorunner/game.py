@@ -95,6 +95,7 @@ async def main():
                         print("Escape gedrückt, zurück ins Hauptmenü")  # Debugging
                         sound_manager.play_music("nguu.ogg", volume=0.5)  # Hauptmenü-Musik abspielen
                         sound_manager.set_volume(0.5)  # Lautstärke auf 0.5 zurücksetzen
+                        active=False
 
                 if event.key == pygame.K_SPACE and not active:
                     # Spiel starten
