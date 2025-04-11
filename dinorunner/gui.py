@@ -46,7 +46,7 @@ class UI:
                                 screen_height - copyright.get_height() - 20))
         font.set_bold(False)
 
-    def pause_menu(self):
+    def pause_menu(self, controller):
         self.pause_menu_active = True
         paused = True
 
@@ -106,6 +106,7 @@ class UI:
             time_delta = self.clock.tick(self.FPS) / 1000.0
 
             for event in pygame.event.get():
+                controller.handle_input(event)
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
@@ -124,7 +125,7 @@ class UI:
                             self.pause_menu_active = False
                             sound_manager.stop_music()  # Ingame-Musik stoppen
                             sound_manager.play_music("nguu.ogg", volume=0.5)  # Hauptmenü-Musik abspielen
-                            self.show_main_menu()  # Zum Hauptmenü wechseln
+                            self.show_main_menu(controller)  # Zum Hauptmenü wechseln
                             return
                         elif event.ui_element == quit_button:
                             pygame.quit()
@@ -171,7 +172,7 @@ class UI:
             self.manager.draw_ui(self.screen)
         pygame.display.flip()
 
-    def show_main_menu(self):
+    def show_main_menu(self, controller):
         self.main_menu_active = True
 
         try:
@@ -204,6 +205,7 @@ class UI:
             time_delta = self.clock.tick(self.FPS) / 1000.0
 
             for event in pygame.event.get():
+                controller.handle_input(event)
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
@@ -237,16 +239,13 @@ class GameController:
         self.screen = screen
         self.screen_width, self.screen_height = screen.get_size()
 
-    def handle_input(self, event, y_change):
+    def handle_input(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_F11:
                 self.toggle_fullscreen()
             if event.key == pygame.K_F12:
                 pygame.quit()
                 sys.exit()
-            if event.key == pygame.K_SPACE and y_change == 0:
-                y_change = 18
-        return y_change
 
     def toggle_fullscreen(self):
         fullscreen = not pygame.display.get_surface().get_flags() & pygame.FULLSCREEN

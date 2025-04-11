@@ -51,7 +51,7 @@ async def main():
     # Musik im Hauptmenü starten (nguu.ogg)
     sound_manager.play_music("nguu.ogg", volume=0.5)
 
-    ui.show_main_menu()  # Hauptmenü anzeigen
+    ui.show_main_menu(game_controller)  # Hauptmenü anzeigen
     pygame.time.delay(1000)  # Eventuell eine kleine Pause für den Start
 
     running = True
@@ -79,17 +79,17 @@ async def main():
             player.move(keys, screen_height - 100, screen_width - player_size * 2)
 
         for event in pygame.event.get():
+            game_controller.handle_input(event)
             if event.type == pygame.QUIT:
                 running = False
                 print("Exit game")
-            y_change = game_controller.handle_input(event, y_change)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     if active:
                         # Ins Pause-Menü wechseln
                         print("Escape gedrückt, Spiel pausieren")  # Debugging
                         sound_manager.set_volume(0.1)  # Lautstärke reduzieren, aber Musik läuft weiter
-                        ui.pause_menu()  # Pause-Menü anzeigen
+                        ui.pause_menu(game_controller)  # Pause-Menü anzeigen
                     else:
                         # Ins Hauptmenü zurückkehren
                         print("Escape gedrückt, zurück ins Hauptmenü")  # Debugging
