@@ -175,7 +175,7 @@ class UI:
         self.main_menu_active = True
 
         try:
-            background = pygame.image.load(self.get_ressources_path('graphics/background.jpg')).convert()
+            background = pygame.image.load(self.get_ressources_path('graphics/MainMenu.png')).convert()
             background = pygame.transform.scale(background, (self.screen.get_width(), self.screen.get_height()))
         except:
             background = None
