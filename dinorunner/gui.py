@@ -255,20 +255,34 @@ class GameController:
             self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
 
 class BackgroundImage:
-    def __init__(self, filename, screen_width, screen_height, get_asset_path):
+    def __init__(self, filename, screen_width, screen_height, get_asset_path, scroll_speed=1.0):
         self.image = pygame.image.load(get_asset_path(filename)).convert_alpha()
         self.original_width, self.original_height = self.image.get_size()
         self.scale_factor_x = screen_width / self.original_width
         self.scale_factor_y = screen_height / self.original_height
-        self.scale_factor = max(self.scale_factor_x, self.scale_factor_y)
+        self.scale_factor = self.scale_factor_y
         self.new_width = int(self.original_width * self.scale_factor)
         self.new_height = int(self.original_height * self.scale_factor)
-        self.x_position = int((self.new_width - screen_width) / 2) * -1
-        self.y_position = int((self.new_height - screen_height) / 2) * -1
         self.scaled_image = pygame.transform.scale(self.image, (self.new_width, self.new_height))
 
+        self.scroll_speed = scroll_speed
+        self.scroll_offset = 0
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+
+    def update(self):
+        self.scroll_offset += self.scroll_speed
+        if self.scroll_offset >= self.new_width:
+            self.scroll_offset = 0
+
     def blit(self, screen):
-        screen.blit(self.scaled_image, (self.x_position, self.y_position))
+        x = -self.scroll_offset
+        screen.blit(self.scaled_image, (x, 0))
+
+        # zweite Kachel (für Endlosscrollen)
+        if x + self.new_width < self.screen_width:
+            screen.blit(self.scaled_image, (x + self.new_width, 0))
+
 
 class Floor:
     def __init__(self, screen, image_path, get_asset_path):
