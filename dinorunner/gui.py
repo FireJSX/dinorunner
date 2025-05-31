@@ -4,6 +4,15 @@ import sys
 import os
 from .sfx import sound_manager
 
+def get_ressources_path(filename):
+    """
+    Gibt den absolut korrekten Pfad zur Ressource zurück – funktioniert sowohl
+    im Entwicklungsmodus als auch in einer PyInstaller-exe.
+    """
+    # Pfad zur temporären Entpackung (PyInstaller) oder aktuelles Verzeichnis
+    base_path = getattr(sys, '_MEIPASS', os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    return os.path.join(base_path, 'ressources', filename)
+
 class UI:
     """
     Die Hauptklasse für die Benutzeroberfläche des Spiels.

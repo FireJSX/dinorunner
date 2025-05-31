@@ -1,11 +1,18 @@
 import pygame
 import asyncio
+import os
 from .logic import Player, ObstacleManager, load_highscore, save_highscore
-from .gui import UI, GameController, BackgroundImage, Floor
+from .gui import UI, GameController, BackgroundImage, Floor, get_ressources_path
 from .sfx import sound_manager
 
 pygame.init()
 pygame.font.init()
+
+pygame.display.set_caption('dinorunner')
+icon_path = get_ressources_path('graphics\\favicon.png')
+icon = pygame.image.load(icon_path)
+pygame.display.set_icon(icon)
+
 
 # Game constants
 WHITE = (255, 255, 255)
