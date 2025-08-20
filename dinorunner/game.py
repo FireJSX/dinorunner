@@ -1,11 +1,18 @@
 import pygame
 import asyncio
+import os
 from .logic import Player, ObstacleManager, load_highscore, save_highscore
-from .gui import UI, GameController, BackgroundImage, Floor
+from .gui import UI, GameController, BackgroundImage, Floor, get_ressources_path
 from .sfx import sound_manager
 
 pygame.init()
 pygame.font.init()
+
+pygame.display.set_caption('dinorunner')
+icon_path = get_ressources_path('graphics\\favicon.png')
+icon = pygame.image.load(icon_path)
+pygame.display.set_icon(icon)
+
 
 # Game constants
 WHITE = (255, 255, 255)
@@ -39,8 +46,12 @@ game_controller = GameController(screen)
 
 player = Player(50, screen_width - 100 - player_size, player_size, speed, gravity, ui)
 obstacles = ObstacleManager(screen_width, player_size // 2, obstacle_speed, ui)
-background = BackgroundImage(ui.get_ressources_path("graphics/moon_background.png"), screen_width, screen_height,
-                             ui.get_ressources_path)
+background_layers = [
+    BackgroundImage("graphics/Ingame_Layer_4.png", screen_width, screen_height, ui.get_ressources_path, scroll_speed=0.2),
+    BackgroundImage("graphics/Ingame_Layer_3.png", screen_width, screen_height, ui.get_ressources_path, scroll_speed=0.4),
+    BackgroundImage("graphics/Ingame_Layer_2.png", screen_width, screen_height, ui.get_ressources_path, scroll_speed=0.6),
+    BackgroundImage("graphics/Ingame_Layer_1.png", screen_width, screen_height, ui.get_ressources_path, scroll_speed=1.0),
+]
 floor = Floor(screen, ui.get_ressources_path("graphics/floor.png"), ui.get_ressources_path)
 
 
@@ -51,7 +62,7 @@ async def main():
     # Musik im Hauptmenü starten (nguu.ogg)
     sound_manager.play_music("nguu.ogg", volume=0.5)
 
-    ui.show_main_menu()  # Hauptmenü anzeigen
+    ui.show_main_menu(game_controller)  # Hauptmenü anzeigen
     pygame.time.delay(1000)  # Eventuell eine kleine Pause für den Start
 
     running = True
@@ -59,7 +70,10 @@ async def main():
         timer.tick(fps)
         y_change = 0
         highscore_value = load_highscore(ui)
-        background.blit(screen)
+        for layer in background_layers:
+            if active:
+                layer.update()
+            layer.blit(screen)
         score_text = font.render(f"Score: {score}", True, WHITE)
         screen.blit(score_text, (screen_width - score_text.get_width() - 25, 20))
         highscore_text = font.render(f"Highscore: {highscore_value}", True, WHITE)
@@ -79,17 +93,17 @@ async def main():
             player.move(keys, screen_height - 100, screen_width - player_size * 2)
 
         for event in pygame.event.get():
+            game_controller.handle_input(event)
             if event.type == pygame.QUIT:
                 running = False
                 print("Exit game")
-            y_change = game_controller.handle_input(event, y_change)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     if active:
                         # Ins Pause-Menü wechseln
                         print("Escape gedrückt, Spiel pausieren")  # Debugging
                         sound_manager.set_volume(0.1)  # Lautstärke reduzieren, aber Musik läuft weiter
-                        ui.pause_menu()  # Pause-Menü anzeigen
+                        ui.pause_menu(game_controller)  # Pause-Menü anzeigen
                     else:
                         # Ins Hauptmenü zurückkehren
                         print("Escape gedrückt, zurück ins Hauptmenü")  # Debugging

@@ -11,6 +11,8 @@ __________________
 
   Jump: Press SPACE to jump over obstacles.
 
+  Move: Press A/D to move your dino.
+
   Pause: Press ESC to open the pause menu.
 
   Quit: Close the window, press the exit button or F12 while ingame.
