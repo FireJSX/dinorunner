@@ -14,10 +14,54 @@ class UI:
     def __init__(self, screen_width, screen_height):
         pygame.init()
         pygame.font.init()
+
+        # tatsächliche Größe speichern (nicht nur die Klassen-Defaults)
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+
         self.screen = pygame.display.set_mode((screen_width, screen_height))
         self.fullscreen = False
         self.font = pygame.font.SysFont('helvetica', 35, True, False)
-        self.manager = pygame_gui.UIManager((screen_width, screen_height))
+
+        # Theme laden (global für ALLE Buttons)
+        theme_path = self.get_ressources_path('ui/theme.json')
+
+        # <<< temporär ins Theme-Verzeichnis wechseln, damit relative Pfade wie "img/..." sicher gefunden werden
+        if os.path.exists(theme_path):
+            original_cwd = os.getcwd()
+            theme_dir = os.path.dirname(theme_path)
+            try:
+                os.chdir(theme_dir)
+                self.manager = pygame_gui.UIManager((screen_width, screen_height), theme_path=theme_path)
+            finally:
+                os.chdir(original_cwd)
+        else:
+            self.manager = pygame_gui.UIManager((screen_width, screen_height))
+        # >>>
+
+        # --- Debug: prüfen, ob Theme und Images wirklich erreichbar sind ---
+        print("Theme geladen:", os.path.exists(theme_path), theme_path)
+        theme_dir = os.path.dirname(theme_path)
+
+        # Variante B: images unter ressources/ui/img/
+        img_b_normal = os.path.join(theme_dir, "img", "button_normal.png")
+        img_b_hover  = os.path.join(theme_dir, "img", "button_hover.png")
+        img_b_press  = os.path.join(theme_dir, "img", "button_pressed.png")
+
+        # Variante A: images unter ressources/graphics/ui/ (eine Ebene höher)
+        img_a_normal = os.path.join(theme_dir, "..", "graphics", "ui", "button_normal.png")
+        img_a_hover  = os.path.join(theme_dir, "..", "graphics", "ui", "button_hover.png")
+        img_a_press  = os.path.join(theme_dir, "..", "graphics", "ui", "button_pressed.png")
+
+        print("[B] Normal-Image exists:", os.path.exists(img_b_normal), "->", img_b_normal)
+        print("[B] Hover-Image  exists:", os.path.exists(img_b_hover),  "->", img_b_hover)
+        print("[B] Press-Image  exists:", os.path.exists(img_b_press),  "->", img_b_press)
+
+        print("[A] Normal-Image exists:", os.path.exists(img_a_normal), "->", os.path.abspath(img_a_normal))
+        print("[A] Hover-Image  exists:", os.path.exists(img_a_hover),  "->", os.path.abspath(img_a_hover))
+        print("[A] Press-Image  exists:", os.path.exists(img_a_press),  "->", os.path.abspath(img_a_press))
+        # ------------------------------------------------------------------
+
         self.FPS = 60
         self.volume = 0.5
         self.volume_slider = None
@@ -28,7 +72,12 @@ class UI:
         self.sound_manager = sound_manager
 
     def get_ressources_path(self, filename):
-        return os.path.join(os.path.dirname(__file__), '..', 'ressources', filename)
+        """
+        Pfad, der sowohl im Dev-Modus als auch in einer PyInstaller-EXE funktioniert.
+        Achtung: 'ressources' liegt eine Ebene über diesem Modul.
+        """
+        base = getattr(sys, '_MEIPASS', os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+        return os.path.join(base, 'ressources', filename)
 
     def start_screen(self, screen, screen_width, screen_height, font):
         WHITE = (255, 255, 255)
@@ -78,6 +127,7 @@ class UI:
         center_x = screen_width // 2 - button_width // 2
         start_y = screen_height // 2 - (button_height + spacing)
 
+        # Keine object_id -> Theme gilt GLOBAL
         resume_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((center_x, start_y), (button_width, button_height)),
             text='Continue',
@@ -147,7 +197,22 @@ class UI:
             element.kill()
         self.pause_menu_elements.clear()
         self.pause_menu_active = False
-        self.manager = pygame_gui.UIManager((self.screen_width, self.screen_height))
+
+        # UIManager nach dem Menü neu mit Theme initialisieren
+        theme_path = self.get_ressources_path('ui/theme.json')
+
+        # <<< auch hier kurz ins Theme-Verzeichnis wechseln
+        if os.path.exists(theme_path):
+            original_cwd = os.getcwd()
+            theme_dir = os.path.dirname(theme_path)
+            try:
+                os.chdir(theme_dir)
+                self.manager = pygame_gui.UIManager((self.screen_width, self.screen_height), theme_path=theme_path)
+            finally:
+                os.chdir(original_cwd)
+        else:
+            self.manager = pygame_gui.UIManager((self.screen_width, self.screen_height))
+        # >>>
 
     def _clear_pause_menu_elements(self):
         for element in self.pause_menu_elements:
@@ -186,6 +251,7 @@ class UI:
         center_x = self.screen.get_width() // 2 - button_width // 2
         start_y = self.screen.get_height() // 2 - (button_height + spacing)
 
+        # Buttons ohne object_id -> verwenden globale Theme-Regel "button"
         start_button = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((center_x, start_y), (button_width, button_height)),
             text='Start game',
